@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مؤسسة أطايب الإنشاءات</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #1a1c20; color: white; margin: 0; padding: 15px; text-align: right;
+            background-image: linear-gradient(rgba(26,28,32,0.9), rgba(26,28,32,0.9)), url('logo.png');
+            background-size: 40%; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
+        }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header img { max-width: 130px; border-radius: 10px; background: white; padding: 5px; }
+        
+        .contact-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .contact-btn { 
+            flex: 1; padding: 12px; border-radius: 8px; text-decoration: none; 
+            color: white; font-size: 13px; font-weight: bold; text-align: center;
+            display: flex; align-items: center; justify-content: center; min-width: 100px;
+        }
+        .bg-wa { background: #25D366; } 
+        .bg-mail { background: #ea4335; } 
+        .bg-web { background: #3498db; } 
+
+        .card { background: #252830; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; }
+        input, textarea, button { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #444; box-sizing: border-box; }
+        button { background: linear-gradient(90deg, #00d2ff, #3a7bd5); color: white; border: none; font-weight: bold; cursor: pointer; }
+        .btn-green { background: #28a745; }
+        .btn-red { background: #eb4d4b; }
+        .hidden { display: none; }
+        .project-img { width: 100%; border-radius: 15px; margin-top: 15px; border: 2px solid #333; }
+        .progress-bg { background: #444; height: 12px; border-radius: 10px; margin: 10px 0; }
+        .progress-fill { background: #00d2ff; height: 100%; border-radius: 10px; transition: 0.5s; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="logo.png" alt="Logo">
+        <h2 style="color: #00d2ff; margin-top: 10px;">أطايب الإنشاءات للمقاولات</h2>
+    </div>
+
+    <div class="contact-bar">
+        <a href="https://wa.me/966567575388" target="_blank" class="contact-btn bg-wa">واتساب</a>
+        <a href="mailto:thebestshades@atayebalinshaat.com" class="contact-btn bg-mail">البريد الإلكتروني</a>
+        <a href="https://www.atayebalinshaat.com/الصفحة-الرئيسية" target="_blank" class="contact-btn bg-web">موقع الإلكتروني للمؤسسة</a>
+    </div>
+
+    <div id="loginSection" class="card">
+        <h3>🔐 دخول النظام</h3>
+        <input type="text" id="user" placeholder="اسم المستخدم">
+        <input type="password" id="pass" placeholder="كلمة المرور">
+        <button onclick="login()">دخول</button>
+    </div>
+
+    <div id="appSection" class="hidden">
+        <h3 id="welcomeMsg"></h3>
+        <div id="adminPanel" class="hidden">
+            <div class="card" style="border-right: 5px solid #28a745;">
+                <h4>👤 إضافة عميل جديد</h4>
+                <input type="text" id="regU" placeholder="اسم العميل">
+                <input type="password" id="regP" placeholder="كلمة المرور">
+                <button class="btn-green" onclick="addUser()">إنشاء حساب</button>
+                <p id="regInfo" style="color: #28a745; text-align: center; font-weight: bold;"></p>
+            </div>
+            <div class="card" style="border-right: 5px solid #00d2ff;">
+                <h4>🏠 ربط مشروع بالعميل</h4>
+                <input type="text" id="pTitle" placeholder="اسم المشروع">
+                <input type="number" id="pClientId" placeholder="رقم ID العميل">
+                <button onclick="addProject()">حفظ المشروع</button>
+            </div>
+        </div>
+        <div id="list"></div>
+        <button class="btn-red" onclick="location.reload()">تسجيل خروج</button>
+    </div>
+
+    <script>
+        let me = null;
+        async function login() {
+            const username = document.getElementById('user').value;
+            const password = document.getElementById('pass').value;
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            });
+            const data = await res.json();
+            if(data.success) {
+                me = data.user;
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('appSection').classList.remove('hidden');
+                document.getElementById('welcomeMsg').innerText = "أهلاً بك: " + me.username;
+                if(me.role === 'admin') document.getElementById('adminPanel').classList.remove('hidden');
+                load();
+            } else { alert("بيانات خاطئة!"); }
+        }
+
+        async function load() {
+            const res = await fetch(`/projects?userId=${me.id}&role=${me.role}`);
+            const projects = await res.json();
+            let html = '';
+            projects.forEach(p => {
+                html += `
+                    <div class="card">
+                        <h3>🏗️ ${p.title}</h3>
+                        <p>الحالة: <span style="color:#00d2ff">${p.status}</span></p>
+                        <div class="progress-bg"><div class="progress-fill" style="width:${p.progress}%"></div></div>
+                        <p>الإنجاز: ${p.progress}%</p>
+                        ${p.img ? `<img class="project-img" src="${p.img}">` : ''}
+                        ${me.role === 'admin' ? `
+                            <input type="text" id="s${p.id}" value="${p.status}">
+                            <input type="number" id="g${p.id}" value="${p.progress}">
+                            <textarea id="n${p.id}">${p.notes}</textarea>
+                            <input type="file" id="f${p.id}">
+                            <button class="btn-green" onclick="update(${p.id})">تحديث</button>
+                        ` : ''}
+                    </div>`;
+            });
+            document.getElementById('list').innerHTML = html || '<p>لا توجد مشاريع</p>';
+        }
+
+        async function addUser() {
+            const username = document.getElementById('regU').value;
+            const password = document.getElementById('regP').value;
+            const res = await fetch('/add-user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            });
+            const data = await res.json();
+            if(data.success) document.getElementById('regInfo').innerText = `✅ الـ ID هو: ${data.id}`;
+        }
+
+        async function addProject() {
+            const title = document.getElementById('pTitle').value;
+            const client_id = document.getElementById('pClientId').value;
+            await fetch('/add-project', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title, client_id})
+            });
+            alert("تم الحفظ!");
+            load();
+        }
+
+        async function update(id) {
+            const fd = new FormData();
+            fd.append('id', id);
+            fd.append('status', document.getElementById('s'+id).value);
+            fd.append('progress', document.getElementById('g'+id).value);
+            fd.append('notes', document.getElementById('n'+id).value);
+            const file = document.getElementById('f'+id).files[0];
+            if(file) fd.append('photo', file);
+            await fetch('/update', { method: 'POST', body: fd });
+            alert("تم التحديث!");
+            load();
+        }
+    </script>
+</body>
+</html>

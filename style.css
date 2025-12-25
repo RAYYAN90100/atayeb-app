@@ -1,0 +1,12 @@
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+.container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 90%; max-width: 500px; }
+.hidden { display: none; }
+input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;}
+button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+button:hover { background: #218838; }
+.logout-btn { background: #dc3545; width: auto; float: left; }
+.project-card { border: 1px solid #eee; padding: 15px; margin-top: 15px; border-radius: 8px; background: #fafafa; }
+.progress-bar { width: 100%; background: #e0e0e0; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+.progress-bar div { height: 100%; background: #007bff; }
+.admin-controls { margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px; }
+h1, h2, h3 { text-align: center; color: #333; }
